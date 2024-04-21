@@ -85,24 +85,47 @@ Wall((500,250),(300,10),(255,0,0)),
 Wall((100,95),(10,300),(255,0,0))
 ]
 
+pygame.font.init()
+font = pygame.font.Font(None , 70)
+text_win = font.render("YOU WON!", True, (255,215,0))
+text_lose = font.render("YOU LOST!", True, (255,0,0))
+
+kick_sound =  pygame.mixer.Sound("kick.ogg")
+money_sound = pygame.mixer.Sound("money.ogg")
 
 
 
 game_over = False
+finish = False
 while not game_over:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_over = True
+    if not finish:
+        window.blit(background,(0,0))
+        player.update()
+        player.reset()
+        enemy.update(WIDTH/2, WIDTH)
+        enemy.reset()
+        gold.reset()
 
-    window.blit(background,(0,0))
-    player.update()
-    player.reset()
-    enemy.update(WIDTH/2, WIDTH)
-    enemy.reset()
-    gold.reset()
+        for w in walls:
+            w.draw_wall()
 
-    for w in walls:
-        w.draw_wall()
+        if pygame.sprite.collide_rect(player, gold):
+            finish = True
+            window.blit(text_win,(WIDTH/2-100,HEIGHT/2-20))
+            money_sound.play()
+
+        
+        #перевіряє чи стикається гравець хоча б з однією стіною
+        walls_collision = any([pygame.sprite.collide_rect(player,w) for w in walls])
+
+
+        if pygame.sprite.collide_rect(player, enemy) or walls_collision:
+            finish = True
+            window.blit(text_lose,(WIDTH/2-100,HEIGHT/2-20))
+            kick_sound.play()
     
 
     pygame.display.update()
